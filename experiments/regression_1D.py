@@ -3,8 +3,8 @@ from preds.glm_wrappers.mlp import GLMRegressor
 import numpy as np
 
 
-noise = 0.001
-ndata = 10
+noise = 0.1
+ndata = 20
 
 
 def f(x):
