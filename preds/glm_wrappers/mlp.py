@@ -29,9 +29,18 @@ class GLMRegressor(torch.nn.Module):
     def detstandardize_data(self, y):
         return y*self.standard_std + self.standard_mean
 
+    def normalize_data(self, x):
+        self.norm_factors = (x.min(axis=0), x.max(axis=0))
+        return (
+            (x - self.norm_factors[0])
+             / (self.norm_factors[1] - self.norm_factors[0])
+        )
+
     def apply_normalization(self, x):
-        self.norm_factors = x.max(axis=0)
-        return x/self.norm_factors
+        return (
+            (x - self.norm_factors[0])
+             / (self.norm_factors[1] - self.norm_factors[0])
+        )
 
     def to_tensor(self, data):
         return torch.from_numpy(data).float()
@@ -42,10 +51,10 @@ class GLMRegressor(torch.nn.Module):
     def fit(self, X, Y):
         X = self.to_tensor(self.normalize_data(X))
         Y = self.to_tensor(self.standardize_data(Y))
-        lr = 5e-3
+        lr = 1e-3
         optim = Adam(self.model.parameters(), lr=lr)
         losses = list()
-        n_epochs = 1000
+        n_epochs = 2000
         for i in range(n_epochs):
             f = self.model(X)
             w = parameters_to_vector(self.model.parameters())
@@ -55,10 +64,17 @@ class GLMRegressor(torch.nn.Module):
             optim.step()
             losses.append(loss.item())
             self.model.zero_grad()
+            if i % 100 == 0 or i == n_epochs - 1:
+                print(f'Epoch: {i + 1}, Loss: {loss}')
 
         self.data = [(X, Y)]
 
     def infer(self):
         self.laplace.infer(self.data, cov_type='kron', dampen_kron=False)
 
-    def predict(self, X)
+    def predict(self, X):
+        X = self.to_tensor(self.apply_normalization(X))
+        mu, var = self.laplace.predictive_samples_glm(X, n_samples=10)
+        mu = mu.detach().cpu().squeeze().numpy()
+        var = var.detach().cpu().squeeze().numpy()
+        return self.detstandardize_data(mu), var**.5*self.standard_std
