@@ -77,4 +77,4 @@ class GLMRegressor(torch.nn.Module):
         mu, var = self.laplace.predictive_samples_glm(X, n_samples=10)
         mu = mu.detach().cpu().squeeze().numpy()
         var = var.detach().cpu().squeeze().numpy()
-        return self.detstandardize_data(mu), var**.5*self.standard_std
+        return self.detstandardize_data(mu), 1.96*var**.5*self.standard_std

@@ -152,7 +152,8 @@ def symeig(M):
     # M = M.double()
     # and then below return L.float(), W.float()
     try:
-        L, W = torch.symeig(M, eigenvectors=True)
+        # L, W = torch.symeig(M, eigenvectors=True)
+        L, W = torch.linalg.eigh(M)
     except RuntimeError:  # did not converge
         logging.info('SYMEIG: adding jitter, did not converge.')
         # use W L W^T + I = W (L + I) W^T

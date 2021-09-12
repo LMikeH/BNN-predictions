@@ -3,8 +3,8 @@ from preds.glm_wrappers.mlp import GLMRegressor
 import numpy as np
 
 
-noise = 0.1
-ndata = 20
+noise = 0.5
+ndata = 100
 
 
 def f(x):
@@ -21,8 +21,8 @@ def data_gen(n):
 x, y = data_gen(ndata)
 
 
-layers = [1, 50, 40, 30, 1]
-bnn = GLMRegressor(layers, noise**.5)
+layers = [1, 50, 40, 25, 1]
+bnn = GLMRegressor(layers, noise)
 bnn.fit(x, y)
 bnn.infer()
 
@@ -36,4 +36,4 @@ plt.plot(x, y, 'o')
 plt.plot(X, Y, '--k')
 plt.plot(X, mu)
 plt.fill_between(X, mu.flatten() - sigma.flatten(), mu.flatten() + sigma.flatten(), alpha=0.25)
-plt.savefig('1dbnn.png')
+plt.savefig('1dbnn.png', dpi=500)
